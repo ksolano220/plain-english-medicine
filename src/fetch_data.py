@@ -1,26 +1,31 @@
-"""Download the Cochrane plain-language summaries dataset from Hugging Face.
+"""Download Cochrane plain-language summary JSON files directly from HF.
 
-Writes Arrow/Parquet files into data/raw/cochrane/. The prepare_dataset.py
-step unifies these into a single JSONL of {input, output} pairs for training.
+Bypasses the `datasets` library's loading-script mechanism (removed in
+datasets 3.0) by fetching the raw JSON files over HTTP. Writes the files
+into data/raw/cochrane/ for prepare_dataset.py to consume.
 """
 
+import urllib.request
 from pathlib import Path
 
-from datasets import load_dataset
+RAW_DIR = Path(__file__).resolve().parent.parent / "data" / "raw" / "cochrane"
+BASE_URL = "https://huggingface.co/datasets/GEM/cochrane-simplification/resolve/main"
+FILES = ["train.json", "validation.json", "test.json"]
 
-RAW_DIR = Path(__file__).resolve().parent.parent / "data" / "raw"
 
-
-def fetch_cochrane():
-    print("Downloading Cochrane plain-language summaries...")
-    ds = load_dataset("GEM/cochrane-simplification")
-    out = RAW_DIR / "cochrane"
-    out.mkdir(parents=True, exist_ok=True)
-    ds.save_to_disk(str(out))
-    print(f"  saved to {out}")
+def fetch():
+    RAW_DIR.mkdir(parents=True, exist_ok=True)
+    for name in FILES:
+        dest = RAW_DIR / name
+        if dest.exists() and dest.stat().st_size > 0:
+            print(f"  cached: {dest}")
+            continue
+        url = f"{BASE_URL}/{name}"
+        print(f"Downloading {url}")
+        urllib.request.urlretrieve(url, dest)
+        print(f"  saved: {dest} ({dest.stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
-    RAW_DIR.mkdir(parents=True, exist_ok=True)
-    fetch_cochrane()
+    fetch()
     print("Done.")
