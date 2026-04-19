@@ -1,13 +1,12 @@
 ## Data
 
-Training data for the plain-English medicine LoRA comes from two public biomedical text-simplification datasets. Both are freely licensed for research use.
+Training data for the plain-English medicine LoRA comes from the Cochrane Plain Language Summaries, a public biomedical text-simplification dataset freely licensed for research use.
 
-### Sources
+### Source
 
 | Dataset | Size | What it is |
 |---------|------|------------|
-| [Cochrane Plain Language Summaries](https://huggingface.co/datasets/GEM/cochrane_simplification) | ~4,500 pairs | Cochrane systematic review abstracts paired with the reviewer-written plain-language summary intended for the general public |
-| [PLABA (Plain Language Adaptation of Biomedical Abstracts)](https://huggingface.co/datasets/bigbio/plaba) | ~750 abstracts, ~7,500 sentence pairs | PubMed biomedical abstracts adapted to plain language by trained annotators, released by the National Library of Medicine |
+| [Cochrane Plain Language Summaries](https://huggingface.co/datasets/GEM/cochrane-simplification) | ~4,500 pairs | Cochrane systematic review abstracts paired with the reviewer-written plain-language summary intended for the general public |
 
 ### Folder layout
 

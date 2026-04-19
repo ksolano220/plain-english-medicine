@@ -24,31 +24,19 @@ SEED = 42
 
 
 def from_cochrane():
-    ds = load_from_disk(str(RAW_DIR / "cochrane"))["train"]
-    for row in ds:
-        src = (row.get("source") or row.get("abstract") or "").strip()
-        tgt = (row.get("target") or row.get("pls") or "").strip()
-        if src and tgt:
-            yield {"input": src, "output": tgt}
-
-
-def from_plaba():
-    ds = load_from_disk(str(RAW_DIR / "plaba"))["train"]
-    for row in ds:
-        src = (row.get("abstract") or row.get("source") or "").strip()
-        tgt = (row.get("adaptation") or row.get("target") or "").strip()
-        if src and tgt:
-            yield {"input": src, "output": tgt}
+    ds = load_from_disk(str(RAW_DIR / "cochrane"))
+    for split in ("train", "validation", "test"):
+        if split not in ds:
+            continue
+        for row in ds[split]:
+            src = (row.get("source") or "").strip()
+            tgt = (row.get("target") or "").strip()
+            if src and tgt:
+                yield {"input": src, "output": tgt}
 
 
 def collect():
-    pairs = []
-    for source_fn in (from_cochrane, from_plaba):
-        try:
-            pairs.extend(source_fn())
-        except Exception as e:
-            print(f"  skipped {source_fn.__name__}: {e}")
-    return pairs
+    return list(from_cochrane())
 
 
 def split(pairs):
