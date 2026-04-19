@@ -4,7 +4,7 @@ import torch
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
-BASE_MODEL = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+BASE_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
 DEFAULT_ADAPTER = "ksolano220/plain-english-medicine"
 
 SYSTEM_PROMPT = (

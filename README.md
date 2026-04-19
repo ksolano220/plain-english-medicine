@@ -2,7 +2,7 @@
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ksolano220/plain-english-medicine/blob/main/notebooks/train_colab.ipynb)
 
-A LoRA fine-tune of **Llama 3.1 8B Instruct** that rewrites clinical and biomedical text in plain language a non-expert can understand. Trained on **~12,000 paired examples** from the Cochrane Plain Language Summaries and PLABA datasets, published by the National Library of Medicine.
+A LoRA fine-tune of **Qwen2.5-1.5B-Instruct** that rewrites clinical and biomedical text in plain language a non-expert can understand. Trained on **~12,000 paired examples** from the Cochrane Plain Language Summaries and PLABA datasets, published by the National Library of Medicine. The entire pipeline — training, inference, and live demo — runs on free-tier infrastructure so anyone with a Hugging Face account can reproduce it.
 
 ### What It Does
 
@@ -24,11 +24,11 @@ Health literacy is a measured equity problem. Roughly 1 in 3 US adults have diff
 
 | Component | Choice | Why |
 |-----------|--------|-----|
-| Base model | Llama 3.1 8B Instruct (4-bit quantized) | Strong English fluency, open weights, fits on a single consumer GPU when quantized |
-| Fine-tuning method | LoRA (r=16, alpha=32) | ~0.2% of parameters trained, ~50 MB adapter instead of a 16 GB full fine-tune |
+| Base model | Qwen2.5-1.5B-Instruct (4-bit quantized) | Strong English instruction-following at a size small enough to run on free-tier CPU for inference, so the live demo stays free |
+| Fine-tuning method | LoRA (r=16, alpha=32) | ~1% of parameters trained, ~20 MB adapter instead of a 3 GB full fine-tune |
 | Target modules | All attention + MLP projections | Broad coverage without full-rank updates |
-| Training hardware | Google Colab T4 (16 GB VRAM) | Free tier, reproducible for anyone |
-| Deployment | Hugging Face Spaces (Gradio) | Free inference endpoint, one-click for recruiters |
+| Training hardware | Google Colab T4 (16 GB VRAM) | Free tier, 30-60 min end-to-end |
+| Deployment | Hugging Face Spaces (Gradio) | Free CPU inference, one-click for recruiters |
 
 ### Data Sources
 

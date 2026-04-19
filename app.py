@@ -21,7 +21,7 @@ EXAMPLES = [
 DESCRIPTION = """
 # Plain English Medicine
 
-This tool rewrites clinical and biomedical text in plain language that a non-expert can understand. It uses a Llama 3.1 8B model fine-tuned with LoRA on the Cochrane Plain Language Summaries and PLABA datasets.
+This tool rewrites clinical and biomedical text in plain language that a non-expert can understand. It uses a Qwen2.5-1.5B model fine-tuned with LoRA on the Cochrane Plain Language Summaries and PLABA datasets.
 
 **Not medical advice.** For information only.
 """

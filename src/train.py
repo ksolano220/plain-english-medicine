@@ -1,11 +1,13 @@
 """LoRA fine-tuning for plain-English medical text generation.
 
-Trains LoRA adapters on top of a 4-bit quantized Llama 3.1 8B Instruct
+Trains LoRA adapters on top of a 4-bit quantized Qwen2.5-1.5B-Instruct
 base model, targeting attention and MLP projection matrices. Designed
-to run on a single Colab T4 GPU (16 GB) in 3 to 5 hours.
+to run on a single Colab T4 GPU (16 GB) in 30 to 60 minutes.
 
 The base model weights stay frozen. Only the LoRA adapters update,
-producing a ~50 MB artifact that can be pushed to Hugging Face Hub.
+producing a ~20 MB artifact that can be pushed to Hugging Face Hub.
+The small base model also runs on free-tier CPU for inference, so the
+live Gradio demo on Hugging Face Spaces stays on free infrastructure.
 """
 
 import json
@@ -22,7 +24,7 @@ from transformers import (
 )
 from trl import SFTTrainer
 
-BASE_MODEL = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+BASE_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
 OUTPUT_DIR = "outputs/lora_weights"
 
 SYSTEM_PROMPT = (
