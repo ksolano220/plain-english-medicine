@@ -2,7 +2,7 @@
 
 Trains LoRA adapters on top of a 4-bit quantized Qwen2.5-1.5B-Instruct
 base model, targeting attention and MLP projection matrices. Designed
-to run on a single Colab T4 GPU (16 GB) in 30 to 60 minutes.
+to run on a single Colab T4 GPU (16 GB) in 20 to 40 minutes.
 
 The base model weights stay frozen. Only the LoRA adapters update,
 producing a ~20 MB artifact that can be pushed to Hugging Face Hub.
@@ -101,23 +101,20 @@ def train(train_path, val_path, hub_repo_id=None):
 
     args = SFTConfig(
         output_dir=OUTPUT_DIR,
-        num_train_epochs=3,
-        per_device_train_batch_size=2,
-        per_device_eval_batch_size=2,
-        gradient_accumulation_steps=4,
+        num_train_epochs=1,
+        per_device_train_batch_size=4,
+        gradient_accumulation_steps=2,
         learning_rate=2e-4,
         lr_scheduler_type="cosine",
         warmup_ratio=0.03,
         bf16=True,
         logging_steps=10,
-        eval_strategy="steps",
-        eval_steps=100,
-        save_strategy="steps",
-        save_steps=200,
-        save_total_limit=2,
-        optim="paged_adamw_8bit",
+        eval_strategy="no",
+        save_strategy="epoch",
+        save_total_limit=1,
+        optim="adamw_torch",
         report_to="none",
-        max_length=1024,
+        max_length=512,
         packing=False,
         dataset_text_field="text",
         push_to_hub=bool(hub_repo_id),
