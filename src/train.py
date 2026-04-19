@@ -20,9 +20,8 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     BitsAndBytesConfig,
-    TrainingArguments,
 )
-from trl import SFTTrainer
+from trl import SFTConfig, SFTTrainer
 
 BASE_MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
 OUTPUT_DIR = "outputs/lora_weights"
@@ -35,13 +34,14 @@ SYSTEM_PROMPT = (
 )
 
 
-def format_example(example):
+def format_example(example, tokenizer):
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": example["input"]},
         {"role": "assistant", "content": example["output"]},
     ]
-    return {"messages": messages}
+    text = tokenizer.apply_chat_template(messages, tokenize=False)
+    return {"text": text}
 
 
 def load_jsonl(path):
@@ -49,9 +49,9 @@ def load_jsonl(path):
         return [json.loads(line) for line in f if line.strip()]
 
 
-def build_dataset(train_path, val_path):
-    train_rows = [format_example(r) for r in load_jsonl(train_path)]
-    val_rows = [format_example(r) for r in load_jsonl(val_path)]
+def build_dataset(train_path, val_path, tokenizer):
+    train_rows = [format_example(r, tokenizer) for r in load_jsonl(train_path)]
+    val_rows = [format_example(r, tokenizer) for r in load_jsonl(val_path)]
     return Dataset.from_list(train_rows), Dataset.from_list(val_rows)
 
 
@@ -95,11 +95,11 @@ def attach_lora(model):
 
 
 def train(train_path, val_path, hub_repo_id=None):
-    train_ds, val_ds = build_dataset(train_path, val_path)
     model, tokenizer = load_base_model()
     model = attach_lora(model)
+    train_ds, val_ds = build_dataset(train_path, val_path, tokenizer)
 
-    args = TrainingArguments(
+    args = SFTConfig(
         output_dir=OUTPUT_DIR,
         num_train_epochs=3,
         per_device_train_batch_size=2,
@@ -117,18 +117,19 @@ def train(train_path, val_path, hub_repo_id=None):
         save_total_limit=2,
         optim="paged_adamw_8bit",
         report_to="none",
+        max_seq_length=1024,
+        packing=False,
+        dataset_text_field="text",
         push_to_hub=bool(hub_repo_id),
         hub_model_id=hub_repo_id,
     )
 
     trainer = SFTTrainer(
         model=model,
-        tokenizer=tokenizer,
         args=args,
         train_dataset=train_ds,
         eval_dataset=val_ds,
-        max_seq_length=1024,
-        packing=False,
+        processing_class=tokenizer,
     )
 
     trainer.train()
