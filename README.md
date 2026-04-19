@@ -1,5 +1,7 @@
 ## Plain English Medicine
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ksolano220/plain-english-medicine/blob/main/notebooks/train_colab.ipynb)
+
 A LoRA fine-tune of **Llama 3.1 8B Instruct** that rewrites clinical and biomedical text in plain language a non-expert can understand. Trained on **~12,000 paired examples** from the Cochrane Plain Language Summaries and PLABA datasets, published by the National Library of Medicine.
 
 ### What It Does
