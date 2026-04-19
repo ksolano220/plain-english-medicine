@@ -2,7 +2,7 @@
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ksolano220/plain-english-medicine/blob/main/notebooks/train_colab.ipynb)
 
-A LoRA fine-tune of **Qwen2.5-1.5B-Instruct** that rewrites clinical and biomedical text in plain language a non-expert can understand. Trained on **~12,000 paired examples** from the Cochrane Plain Language Summaries and PLABA datasets, published by the National Library of Medicine. The entire pipeline — training, inference, and live demo — runs on free-tier infrastructure so anyone with a Hugging Face account can reproduce it.
+A LoRA fine-tune of **Qwen2.5-1.5B-Instruct** that rewrites clinical and biomedical text in plain language a non-expert can understand. Trained on **~4,500 paired examples** from the Cochrane Plain Language Summaries, a dataset of systematic review abstracts paired with reviewer-written plain-language summaries. The entire pipeline, training, inference, and live demo, runs on free-tier infrastructure so anyone with a Hugging Face account can reproduce it.
 
 ### What It Does
 
@@ -30,14 +30,13 @@ Health literacy is a measured equity problem. Roughly 1 in 3 US adults have diff
 | Training hardware | Google Colab T4 (16 GB VRAM) | Free tier, 30-60 min end-to-end |
 | Deployment | Hugging Face Spaces (Gradio) | Free CPU inference, one-click for recruiters |
 
-### Data Sources
+### Data Source
 
 | Dataset | Size | Source |
 |---------|------|--------|
-| [Cochrane Plain Language Summaries](https://huggingface.co/datasets/GEM/cochrane_simplification) | ~4,500 pairs | Systematic review abstracts paired with reviewer-written plain summaries |
-| [PLABA](https://huggingface.co/datasets/bigbio/plaba) | ~7,500 sentence pairs | PubMed abstracts adapted by NLM annotators |
+| [Cochrane Plain Language Summaries](https://huggingface.co/datasets/GEM/cochrane-simplification) | ~4,500 pairs | Systematic review abstracts paired with reviewer-written plain summaries |
 
-Both datasets are public, license-clean, and contain no patient data.
+The dataset is public, license-clean, and contains no patient data.
 
 ### Results
 
