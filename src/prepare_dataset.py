@@ -19,6 +19,7 @@ OUT_DIR = ROOT / "data" / "processed"
 
 VAL_FRACTION = 0.1
 SEED = 42
+MAX_PAIRS = 500  # cap training data for fast Colab T4 runs
 
 
 def read_records(path: Path):
@@ -53,7 +54,12 @@ def from_cochrane():
 
 
 def collect():
-    return list(from_cochrane())
+    pairs = list(from_cochrane())
+    if len(pairs) > MAX_PAIRS:
+        random.Random(SEED).shuffle(pairs)
+        pairs = pairs[:MAX_PAIRS]
+        print(f"  capped to {MAX_PAIRS} pairs for fast training")
+    return pairs
 
 
 def split_pairs(pairs):
