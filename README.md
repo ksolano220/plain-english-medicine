@@ -14,7 +14,9 @@ A LoRA fine-tune of **Qwen2.5-1.5B-Instruct** that rewrites clinical and biomedi
 
 ### Try the Demo
 
-Live Gradio demo on Hugging Face Spaces: [ksolano220/plain-english-medicine](https://huggingface.co/spaces/ksolano220/plain-english-medicine)
+Live Gradio demo: [huggingface.co/spaces/ksolano220/plain-english-medicine](https://huggingface.co/spaces/ksolano220/plain-english-medicine)
+
+Also available as a Hugging Face model: [huggingface.co/ksolano220/plain-english-medicine](https://huggingface.co/ksolano220/plain-english-medicine)
 
 ### Why
 
