@@ -1,107 +1,50 @@
-## Plain English Medicine
+## Plain English Medicine — V1 LoRA iteration (lessons learned)
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ksolano220/plain-english-medicine/blob/main/notebooks/train_colab.ipynb)
+A first-pass LoRA fine-tune of **Qwen2.5-1.5B-Instruct** on the [Cochrane Plain Language Summaries](https://huggingface.co/datasets/GEM/cochrane-simplification) dataset, intended to rewrite clinical and biomedical text in plain English.
 
-A LoRA fine-tune of **Qwen2.5-1.5B-Instruct** that rewrites clinical and biomedical text in plain language a non-expert can understand. Trained on **~4,500 paired examples** from the Cochrane Plain Language Summaries, a dataset of systematic review abstracts paired with reviewer-written plain-language summaries. The entire pipeline, training, inference, and live demo, runs on free-tier infrastructure so anyone with a Hugging Face account can reproduce it.
+**This project is kept public as a documented learning artifact.** The successor, which applies the lessons from this run, is here: **[symptom-triage-coach](https://github.com/ksolano220/symptom-triage-coach)** (the live deployed demo).
 
-### What It Does
+### What went wrong
 
-| Clinical source | Plain English |
-|-----------------|---------------|
-| Patient presents with acute exacerbation of chronic obstructive pulmonary disease. | The patient is having a sudden, serious flare-up of their long-term lung disease. |
-| ECG demonstrates ST-elevation in leads II, III, and aVF consistent with inferior wall myocardial infarction. | The heart tracing shows a heart attack affecting the bottom part of the heart. |
-| Hemoglobin A1c is 9.2, indicating suboptimal glycemic control. | A blood test that shows average blood sugar over three months is 9.2, which means blood sugar has been running too high. |
+The Cochrane PLS dataset's pairs are **(research abstract → Cochrane plain-language review summary)**. A Cochrane PLS is written from a full systematic review, not from the abstract alone, so the targets contain aggregated facts the inputs don't support: trial counts, bias assessments, risk ratios, confidence intervals.
 
-### Try the Demo
+Fine-tuning on those pairs taught the model to generate review-formatted output including **fabricated trial statistics** — the classic task/data mismatch.
 
-Live Gradio demo: [huggingface.co/spaces/ksolano220/plain-english-medicine](https://huggingface.co/spaces/ksolano220/plain-english-medicine)
+Example of the failure mode — given a single clinical sentence as input:
 
-Also available as a Hugging Face model: [huggingface.co/ksolano220/plain-english-medicine](https://huggingface.co/ksolano220/plain-english-medicine)
+> *Patient presents with acute exacerbation of chronic obstructive pulmonary disease.*
 
-### Why
+The trained adapter confidently produced:
 
-Health literacy is a measured equity problem. Roughly 1 in 3 US adults have difficulty understanding the medical information they receive, and patients who cannot read their discharge notes have worse outcomes and higher readmission rates. This project is a small proof of concept that a lightweight, open-weight model can shoulder some of that translation work without sending any text to a commercial API.
+> *We identified 10 trials involving 2,345 patients... Two trials were at low risk of bias and eight at high risk of bias. In one trial comparing oral corticosteroids to placebo, there was no difference between groups in overall mortality (risk ratio (RR) 0.88, 95% CI 0.50 to 1.56)...*
 
-### Architecture
+None of those trials, patient counts, or statistics exist. The model learned a genre (systematic-review PLS) and hallucinated content to fit it.
 
-| Component | Choice | Why |
-|-----------|--------|-----|
-| Base model | Qwen2.5-1.5B-Instruct (4-bit quantized) | Strong English instruction-following at a size small enough to run on free-tier CPU for inference, so the live demo stays free |
-| Fine-tuning method | LoRA (r=16, alpha=32) | ~1% of parameters trained, ~20 MB adapter instead of a 3 GB full fine-tune |
-| Target modules | All attention + MLP projections | Broad coverage without full-rank updates |
-| Training hardware | Google Colab T4 (16 GB VRAM) | Free tier, 30-60 min end-to-end |
-| Deployment | Hugging Face Spaces (Gradio) | Free CPU inference, one-click for recruiters |
+### What I took from it
 
-### Data Source
+1. **A dataset whose targets depend on inputs the model will never see at inference time will train the model to hallucinate those dependencies.** The failure wasn't model quality — it was data/task mismatch.
+2. **Medical AI outputs with fabricated statistics are a real liability even with disclaimers.** I decided a public demo wasn't responsible to ship, and took down the Hugging Face Space.
+3. **The successor project ([symptom-triage-coach](https://github.com/ksolano220/symptom-triage-coach)) uses synthetic training data generated to a strict JSON schema**, with every pair validated before training. Hallucinated content literally cannot fit the output shape.
 
-| Dataset | Size | Source |
-|---------|------|--------|
-| [Cochrane Plain Language Summaries](https://huggingface.co/datasets/GEM/cochrane-simplification) | ~4,500 pairs | Systematic review abstracts paired with reviewer-written plain summaries |
+### What's still useful in this repo
 
-The dataset is public, license-clean, and contains no patient data.
+The end-to-end pipeline code is solid and was reused in V2:
+- Colab notebook with HF Hub push
+- LoRA training loop (PEFT + TRL SFTTrainer, 4-bit QLoRA on T4)
+- Gradio Space scaffolding
+- Evaluation script (BLEU, ROUGE, Flesch-Kincaid)
 
-### Results
+See `src/` and `notebooks/train_colab.ipynb`.
 
-Evaluated on a held-out 10% validation split (200 examples).
+### Artifacts
 
-| Metric | Value | What it means |
-|--------|-------|---------------|
-| BLEU | _pending training run_ | n-gram overlap with reference plain-English |
-| ROUGE-L | _pending training run_ | longest common subsequence overlap |
-| Flesch-Kincaid grade (generated) | _pending training run_ | US school grade needed to read output (target ~8-10) |
-| Flesch-Kincaid grade (source) | _pending training run_ | same for the clinical source (baseline comparison) |
-
-### How to Run
-
-**Use the trained model (no GPU needed on the inference side):**
-
-```bash
-pip install -r requirements.txt
-python app.py   # launches local Gradio UI
-```
-
-**Retrain from scratch (needs a GPU):**
-
-```bash
-# Option A: open notebooks/train_colab.ipynb in Google Colab (T4 GPU, free tier)
-
-# Option B: local, on a 16GB+ CUDA GPU
-pip install -r requirements.txt
-python src/fetch_data.py        # downloads Cochrane + PLABA
-python src/prepare_dataset.py   # unifies into train/val JSONL
-python src/train.py             # runs LoRA training, saves to outputs/
-python src/evaluate.py          # BLEU, ROUGE, readability metrics
-```
-
-### Project Layout
-
-```
-plain-english-medicine/
-├── app.py                      # Gradio demo (HF Space entry point)
-├── notebooks/
-│   └── train_colab.ipynb       # End-to-end Colab runner
-├── src/
-│   ├── fetch_data.py           # Downloads Cochrane + PLABA from HF
-│   ├── prepare_dataset.py      # Unifies into {input, output} JSONL
-│   ├── train.py                # LoRA training loop
-│   ├── inference.py            # Load base + adapter, generate
-│   └── evaluate.py             # BLEU, ROUGE, Flesch-Kincaid, length ratio
-├── data/
-│   ├── README.md               # Data source documentation
-│   └── sample.jsonl            # 20 reference pairs
-└── outputs/
-    ├── evaluation_metrics.json # Final metrics (generated by evaluate.py)
-    └── sample_outputs.md       # 10 before/after examples on val set
-```
+- Trained adapter still on HF: [huggingface.co/ksolano220/plain-english-medicine](https://huggingface.co/ksolano220/plain-english-medicine)
+- No live Gradio demo (retired; see [symptom-triage-coach](https://huggingface.co/spaces/ksolano220/symptom-triage-coach) for the working demo)
 
 ### Tools Used
 
 - PyTorch, Transformers, PEFT, TRL (SFTTrainer)
 - bitsandbytes (4-bit quantization)
-- Hugging Face Datasets, Hub, Spaces
-- Gradio (demo UI)
+- Hugging Face Datasets, Hub
+- Gradio (Space scaffolding)
 - sacreBLEU, rouge-score, textstat (evaluation)
-
-### Not Medical Advice
-
-This model is intended for research and educational use. It is not a substitute for advice from a licensed clinician, and its output should not be used to make medical decisions.
