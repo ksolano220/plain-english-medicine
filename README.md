@@ -1,4 +1,4 @@
-## Plain English Medicine — V1 LoRA iteration (lessons learned)
+## Plain English Medicine: V1 LoRA iteration (lessons learned)
 
 A first-pass LoRA fine-tune of **Qwen2.5-1.5B-Instruct** on the [Cochrane Plain Language Summaries](https://huggingface.co/datasets/GEM/cochrane-simplification) dataset, intended to rewrite clinical and biomedical text in plain English.
 
@@ -8,9 +8,9 @@ A first-pass LoRA fine-tune of **Qwen2.5-1.5B-Instruct** on the [Cochrane Plain 
 
 The Cochrane PLS dataset's pairs are **(research abstract → Cochrane plain-language review summary)**. A Cochrane PLS is written from a full systematic review, not from the abstract alone, so the targets contain aggregated facts the inputs don't support: trial counts, bias assessments, risk ratios, confidence intervals.
 
-Fine-tuning on those pairs taught the model to generate review-formatted output including **fabricated trial statistics** — the classic task/data mismatch.
+Fine-tuning on those pairs taught the model to generate review-formatted output including **fabricated trial statistics**, the classic task/data mismatch.
 
-Example of the failure mode — given a single clinical sentence as input:
+Example of the failure mode, given a single clinical sentence as input:
 
 > *Patient presents with acute exacerbation of chronic obstructive pulmonary disease.*
 
@@ -22,7 +22,7 @@ None of those trials, patient counts, or statistics exist. The model learned a g
 
 ### What I took from it
 
-1. **A dataset whose targets depend on inputs the model will never see at inference time will train the model to hallucinate those dependencies.** The failure wasn't model quality — it was data/task mismatch.
+1. **A dataset whose targets depend on inputs the model will never see at inference time will train the model to hallucinate those dependencies.** The failure wasn't model quality. It was data/task mismatch.
 2. **Medical AI outputs with fabricated statistics are a real liability even with disclaimers.** I decided a public demo wasn't responsible to ship, and took down the Hugging Face Space.
 3. **The successor project ([symptom-triage-coach](https://github.com/ksolano220/symptom-triage-coach)) uses synthetic training data generated to a strict JSON schema**, with every pair validated before training. Hallucinated content literally cannot fit the output shape.
 
